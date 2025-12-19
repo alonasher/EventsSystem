@@ -25,7 +25,7 @@ export const EventsTable = ({ events }: EventsTableProps) => {
                     {events.map((evt, index) => (
                         <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
                             <td style={{ padding: '10px' }}>
-                                {format(new Date(evt.time), 'dd/MM/yyyy HH:mm:ss')}
+                                {format(new Date(evt.timestamp), 'dd/MM/yyyy HH:mm:ss')}
                             </td>
                             <td style={{ padding: '10px', fontWeight: 'bold' }}>{evt.type}</td>
                             <td style={{ padding: '10px' }}>{evt.payload}</td>

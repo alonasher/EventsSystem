@@ -1,5 +1,5 @@
 using EventsApi;
-using InfluxDB.Client; 
+using EventsApi.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,17 +7,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
-
-
-builder.Services.AddSingleton<IInfluxDBClient>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    return InfluxDBClientFactory.Create(
-        config["InfluxDB:Url"], 
-        config["InfluxDB:Token"]);
-});
+// Register services via configuration extensions
+builder.Services.AddKafkaProducer(builder.Configuration);
+builder.Services.AddInfluxDb(builder.Configuration);
 // ----------------------------------------
 
 var app = builder.Build();
