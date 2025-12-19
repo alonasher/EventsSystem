@@ -1,7 +1,9 @@
 using Confluent.Kafka;
+using EventsConsumer.Configuration;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Writes;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace EventsConsumer;
@@ -9,68 +11,63 @@ namespace EventsConsumer;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly IConfiguration _config;
-    private const string MeasurementName = "user_events"; // שם הטבלה ב-InfluxDB
+    private readonly KafkaSettings _kafkaSettings;
+    private readonly InfluxDbSettings _influxDbSettings;
+    private const string MeasurementName = "user_events";
 
-    public Worker(ILogger<Worker> logger, IConfiguration config)
+    public Worker( ILogger<Worker> logger, IOptions<KafkaSettings> kafkaOptions, IOptions<InfluxDbSettings> influxDbOptions)
     {
         _logger = logger;
-        _config = config;
+        _kafkaSettings = kafkaOptions.Value;
+        _influxDbSettings = influxDbOptions.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // 1. הגדרות Kafka
-        var conf = new ConsumerConfig
-        {
-            BootstrapServers = _config["Kafka:BootstrapServers"],
-            GroupId = _config["Kafka:GroupId"],
-            AutoOffsetReset = AutoOffsetReset.Earliest, // אם אין היסטוריה, תתחיל מההתחלה
-            EnableAutoCommit = false // אנחנו נדווח ידנית שסיימנו לעבד
-        };
-
-        using var consumer = new ConsumerBuilder<Ignore, string>(conf).Build();
-        consumer.Subscribe(_config["Kafka:Topic"]);
-
-        // 2. הגדרות InfluxDB
-        using var influxDBClient = InfluxDBClientFactory.Create(
-            _config["InfluxDB:Url"], 
-            _config["InfluxDB:Token"]);
-            
-        var writeApi = influxDBClient.GetWriteApiAsync();
+        using var consumer = CreateKafkaConsumer();
+        using var influxDbClient = CreateInfluxDbClient();
+        var writeApi = influxDbClient.GetWriteApiAsync();
 
         _logger.LogInformation("Worker started. Listening to Kafka...");
 
-        // 3. הלולאה האינסופית
+        try
+        {
+            await ConsumeMessagesAsync(consumer, writeApi, stoppingToken);
+        }
+        finally
+        {
+            _logger.LogInformation("Worker stopped.");
+        }
+    }
+
+    private IConsumer<Ignore, string> CreateKafkaConsumer()
+    {
+        var config = new ConsumerConfig
+        {
+            BootstrapServers = _kafkaSettings.BootstrapServers,
+            GroupId = _kafkaSettings.GroupId,
+            AutoOffsetReset = AutoOffsetReset.Earliest,
+            EnableAutoCommit = false
+        };
+
+        var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
+        consumer.Subscribe(_kafkaSettings.Topic);
+        return consumer;
+    }
+
+    private InfluxDBClient CreateInfluxDbClient()
+    {
+        return new InfluxDBClient(_influxDbSettings.Url, _influxDbSettings.Token);
+    }
+
+    private async Task ConsumeMessagesAsync( IConsumer<Ignore, string> consumer, IWriteApiAsync writeApi, CancellationToken stoppingToken)
+    {
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                // האזנה להודעה (Blocking עד שמגיעה הודעה)
                 var consumeResult = consumer.Consume(stoppingToken);
-                var message = consumeResult.Message.Value;
-
-                _logger.LogInformation($"Received message: {message}");
-
-                // המרה מ-JSON לאובייקט
-                var eventData = JsonSerializer.Deserialize<EventDto>(message);
-
-                if (eventData != null)
-                {
-                    // 4. בניית נקודת מידע ל-InfluxDB
-                    var point = PointData
-                        .Measurement(MeasurementName)
-                        .Tag("type", eventData.Type)       // Tag = שדה שאפשר לפלטר לפיו מהר (אינדקס)
-                        .Field("payload", eventData.Payload) // Field = המידע הגולמי
-                        .Timestamp(eventData.Timestamp, WritePrecision.Ns);
-
-                    // כתיבה ל-DB
-                    await writeApi.WritePointAsync(point, _config["InfluxDB:Bucket"], _config["InfluxDB:Org"]);
-                    
-                    _logger.LogInformation("Written to InfluxDB!");
-                }
-
-                // דיווח לקפקא שסיימנו בהצלחה עם ההודעה הזו
+                await ProcessMessageAsync(consumeResult, writeApi, stoppingToken);
                 consumer.Commit(consumeResult);
             }
             catch (OperationCanceledException)
@@ -79,8 +76,45 @@ public class Worker : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error processing message: {ex.Message}");
+                _logger.LogError(ex, "Error processing message: {Message}", ex.Message);
             }
         }
     }
+
+    private async Task ProcessMessageAsync( ConsumeResult<Ignore, string> consumeResult, IWriteApiAsync writeApi, CancellationToken stoppingToken)
+    {
+        var message = consumeResult.Message.Value;
+        _logger.LogInformation("Received message: {Message}", message);
+
+        var eventData = JsonSerializer.Deserialize<EventDto>(message);
+        if (eventData is null)
+        {
+            _logger.LogWarning("Failed to deserialize message");
+            return;
+        }
+
+        var point = CreateDataPoint(eventData);
+        await WriteToInfluxDbAsync(writeApi, point, stoppingToken);
+
+        _logger.LogInformation("Written to InfluxDB!");
+    }
+
+    private static PointData CreateDataPoint(EventDto eventData)
+    {
+        return PointData
+            .Measurement(MeasurementName)
+            .Tag("type", eventData.Type)
+            .Field("payload", eventData.Payload)
+            .Timestamp(eventData.Timestamp, WritePrecision.Ns);
+    }
+
+    private async Task WriteToInfluxDbAsync( IWriteApiAsync writeApi, PointData point, CancellationToken stoppingToken)
+    {
+        await writeApi.WritePointAsync(
+            point,
+            _influxDbSettings.Bucket,
+            _influxDbSettings.Org,
+            stoppingToken);
+    }
+
 }
