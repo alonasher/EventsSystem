@@ -5,19 +5,28 @@ namespace EventsApi;
 
 public class InfluxQueryService : IInfluxQueryService
 {
+    private const string MeasurementFilter = "user_events";
+    private const string FieldFilter = "payload";
+    private const string TypeKey = "type";
+    private const string DefaultType = "unknown";
+    private const string DefaultPayload = "";
+
     private readonly IInfluxDBClient _client;
     private readonly InfluxDbSettings _settings;
+    private readonly ILogger<InfluxQueryService> _logger;
 
-    public InfluxQueryService(IInfluxDBClient client, IOptions<InfluxDbSettings> settings)
+    public InfluxQueryService(IInfluxDBClient client, IOptions<InfluxDbSettings> settings, ILogger<InfluxQueryService> logger)
     {
         _client = client;
         _settings = settings.Value;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<EventDto>> GetEventsAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default)
     {
         if (from.HasValue && to.HasValue && from > to)
         {
+            _logger.LogWarning("Invalid date range: from ({From}) > to ({To})", from, to);
             throw new ArgumentException("'from' must be earlier than or equal to 'to'.");
         }
 
@@ -30,22 +39,33 @@ public class InfluxQueryService : IInfluxQueryService
             : "now()";
 
         var query = $@"from(bucket: ""{_settings.Bucket}"")
-                    |> range(start: {startExpr}, stop: {stopExpr})
-                    |> filter(fn: (r) => r[""_measurement""] == ""user_events"")
-                    |> filter(fn: (r) => r[""_field""] == ""payload"")";
+            |> range(start: {startExpr}, stop: {stopExpr})
+            |> filter(fn: (r) => r[""_measurement""] == ""{MeasurementFilter}"")
+            |> filter(fn: (r) => r[""_field""] == ""{FieldFilter}"")";
 
-        var queryApi = _client.GetQueryApi();
-        var tables = await queryApi.QueryAsync(query, _settings.Org, cancellationToken);
+        try
+        {
+            _logger.LogDebug("Executing InfluxDB query for range [{From}, {To}]", from ?? DateTime.MinValue, to ?? DateTime.MaxValue);
 
-        var results = tables
-            .SelectMany(t => t.Records)
-            .Select(r => new EventDto(
-                Type: r.GetValueByKey("type") as string ?? "unknown",
-                Payload: r.GetValue() as string ?? "",
-                Timestamp: r.GetTime().GetValueOrDefault().ToDateTimeUtc()
-            ))
-            .ToList();
+            var queryApi = _client.GetQueryApi();
+            var tables = await queryApi.QueryAsync(query, _settings.Org, cancellationToken);
 
-        return results;
+            var results = tables
+                .SelectMany(t => t.Records)
+                .Select(r => new EventDto(
+                    Type: r.GetValueByKey(TypeKey) as string ?? DefaultType,
+                    Payload: r.GetValue() as string ?? DefaultPayload,
+                    Timestamp: r.GetTime().GetValueOrDefault().ToDateTimeUtc()
+                ))
+                .ToList();
+
+            _logger.LogDebug("Retrieved {RecordCount} events from InfluxDB", results.Count);
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to query InfluxDB for range [{From}, {To}]", from, to);
+            throw;
+        }
     }
 }
