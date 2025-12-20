@@ -115,7 +115,7 @@ The application consists of two main pages:
 
 ## 💡 Key Design Decisions & Assumptions
 
-* **Web Workers:** implemented to meet the bonus requirement and demonstrate performance optimization by handling network requests in a background thread.
+* **Web Workers:** implemented to demonstrate performance optimization by handling network requests in a background thread.
 * **InfluxDB:** Chosen over a relational DB (SQL) because event logs are time-series data by nature. InfluxDB offers superior write performance and time-based query capabilities.
 * **Kafka:** Used to decouple the high-throughput ingestion (API) from the processing layer (Consumer), ensuring the API remains responsive even under heavy load.
 * **Clean Architecture:** The frontend is separated into Views, Components, and Services to maintain code modularity.
