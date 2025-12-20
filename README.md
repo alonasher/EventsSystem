@@ -8,10 +8,10 @@ The system is built using a **Microservices Architecture** approach:
 
 ```mermaid
 graph LR
-    Client[React Client] -->|Web Worker| API[Backend API (.NET 9)]
-    API -->|Produce| Kafka[Kafka Broker]
-    Kafka -->|Consume| Worker[Worker Service (.NET 9)]
-    Worker -->|Write| InfluxDB[InfluxDB]
+    Client["React Client"] -->|Web Worker| API["Backend API<br/>(.NET 9)"]
+    API -->|Produce| Kafka["Kafka Broker"]
+    Kafka -->|Consume| Worker["Worker Service<br/>(.NET 9)"]
+    Worker -->|Write| InfluxDB["InfluxDB"]
 ```
 
 * **Frontend:** React (Vite + TypeScript). Implements **Web Workers** for off-main-thread event submission.
