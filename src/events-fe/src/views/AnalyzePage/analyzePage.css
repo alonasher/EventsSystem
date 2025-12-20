@@ -1,0 +1,12 @@
+.analyze-page {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.analyze-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+

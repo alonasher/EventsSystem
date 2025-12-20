@@ -3,9 +3,7 @@
   color: #666;
 }
 
-.events-table-container {
-  /* container for table - keeps existing layout */
-}
+.events-table-container {}
 
 .events-table {
   width: 100%;

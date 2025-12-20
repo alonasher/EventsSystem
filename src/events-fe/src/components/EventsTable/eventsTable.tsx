@@ -7,7 +7,8 @@ interface EventsTableProps {
   events: AppEvent[];
 }
 
-export const EventsTable = ({ events }: EventsTableProps) => {
+const EventsTable = (props: EventsTableProps) => {
+  const { events } = props;
   if (events.length === 0) {
     return <p className="events-empty">No events found.</p>;
   }
@@ -35,3 +36,5 @@ export const EventsTable = ({ events }: EventsTableProps) => {
     </div>
   );
 };
+
+export default EventsTable;
