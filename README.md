@@ -81,7 +81,7 @@ dotnet run
 Open a new terminal in the `src/events-ui` folder:
 
 ```bash
-cd src/events-ui
+cd src/events-fe
 npm install
 npm run dev
 
