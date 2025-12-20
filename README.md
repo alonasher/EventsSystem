@@ -36,7 +36,7 @@ graph LR
 ### 0. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/alonasher/EventsSystem.git
 cd events-project
 
 ```
@@ -125,6 +125,5 @@ The application consists of two main pages:
 ## 📞 Contact
 
 Submitted by: Alon Asher
-Repository: [Link to your repo]
 
 ```
