@@ -33,6 +33,14 @@ graph LR
 
 ## 🏃‍♂️ Setup & Run Instructions
 
+### 0. Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd events-project
+
+```
+
 ### 1. Infrastructure (Docker)
 
 Start the necessary infrastructure services (Kafka, InfluxDB, Kafka UI):
