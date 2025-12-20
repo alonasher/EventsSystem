@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using EventsConsumer.Configuration;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
@@ -24,6 +25,8 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await EnsureTopicExistsAsync();
+        
         using var consumer = CreateKafkaConsumer();
         using var influxDbClient = CreateInfluxDbClient();
         var writeApi = influxDbClient.GetWriteApiAsync();
@@ -37,6 +40,46 @@ public class Worker : BackgroundService
         finally
         {
             _logger.LogInformation("Worker stopped.");
+        }
+    }
+
+    private async Task EnsureTopicExistsAsync()
+    {
+        var adminConfig = new AdminClientConfig
+        {
+            BootstrapServers = _kafkaSettings.BootstrapServers
+        };
+
+        using var adminClient = new AdminClientBuilder(adminConfig).Build();
+        
+        try
+        {
+            var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
+            var topicExists = metadata.Topics.Any(t => t.Topic == _kafkaSettings.Topic);
+
+            if (!topicExists)
+            {
+                _logger.LogInformation("Topic '{Topic}' does not exist. Creating...", _kafkaSettings.Topic);
+                
+                var topicSpecification = new TopicSpecification
+                {
+                    Name = _kafkaSettings.Topic,
+                    NumPartitions = 1,
+                    ReplicationFactor = 1
+                };
+
+                await adminClient.CreateTopicsAsync(new[] { topicSpecification });
+                _logger.LogInformation("Topic '{Topic}' created successfully.", _kafkaSettings.Topic);
+            }
+            else
+            {
+                _logger.LogInformation("Topic '{Topic}' already exists.", _kafkaSettings.Topic);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error ensuring topic exists: {Message}", ex.Message);
+            throw;
         }
     }
 
