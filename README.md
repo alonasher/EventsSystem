@@ -99,7 +99,7 @@ The application consists of two main pages:
 
 * Simulate user events using the provided controls:
 * **Button Click**
-* **Text Input** (triggers on blur)
+* **Text Input** (triggers on change with debounce)
 * **Checkbox Toggle**
 
 
