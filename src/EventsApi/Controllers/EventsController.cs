@@ -43,6 +43,11 @@ namespace EventsApi
         [HttpPost]
         public async Task<IActionResult> PublishEvent([FromBody] EventDto eventDto, CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 await _producer.ProduceAsync(eventDto, cancellationToken);
