@@ -37,7 +37,7 @@ graph LR
 
 ```bash
 git clone https://github.com/alonasher/EventsSystem.git
-cd events-project
+cd EventsSystem
 
 ```
 
