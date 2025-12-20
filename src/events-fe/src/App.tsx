@@ -1,7 +1,7 @@
 import './App.css'
-import { AnalyzePage } from './views/AnalyzePage/analyzePage'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { RecordingPage } from './views/RecordingPage/recordingPage'
+import AnalyzePage from './views/AnalyzePage/analyzePage'
+import RecordingPage from './views/RecordingPage/recordingPage'
 import Navbar from './components/Navbar/navbar';
 
 function App() {

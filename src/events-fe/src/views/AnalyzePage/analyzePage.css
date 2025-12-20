@@ -10,3 +10,42 @@
   margin-bottom: 1rem;
 }
 
+.analyze-error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.analyze-error-message {
+  margin: 0;
+  color: #721c24;
+  font-weight: 500;
+}
+
+.analyze-error-retry {
+  padding: 6px 12px;
+  background: #721c24;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.analyze-error-retry:hover {
+  background: #5a151c;
+}
+
+.analyze-loading {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+}
+

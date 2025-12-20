@@ -1,0 +1,48 @@
+.recording-page {
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.recording-container {
+  background: #fff;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.recording-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recording-button:hover {
+  background: #0056b3;
+}
+
+.recording-input {
+  padding: 8px;
+  width: 50%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.recording-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.recording-status {
+  margin-top: 1rem;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  width: 50%;
+}

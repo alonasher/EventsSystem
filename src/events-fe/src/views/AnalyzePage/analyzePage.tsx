@@ -6,9 +6,10 @@ import Filter from '../../components/Filter/filter';
 import { formatDateTimeLocal } from '../../utils/dateUtils';
 import './analyzePage.css';
 
-export const AnalyzePage = () => {
+const AnalyzePage = () => {
     const [events, setEvents] = useState<AppEvent[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
@@ -29,14 +30,16 @@ export const AnalyzePage = () => {
     const loadData = async () => {
         try {
             setLoading(true);
+            setError(null);
             const fromISO = fromDate ? new Date(fromDate).toISOString() : undefined;
             const toISO = toDate ? new Date(toDate).toISOString() : undefined;
 
             const data = await eventsService.getAll(fromISO, toISO);
             setEvents(data);
         } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch events';
             console.error(err);
-            alert('Error fetching data');
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -61,7 +64,18 @@ export const AnalyzePage = () => {
                 maxDateTime={formatDateTimeLocal(new Date())}
             />
             
-            {loading ? <p>Loading...</p> : <EventsTable events={events} />}
+            {error && (
+                <div className="analyze-error">
+                    <p className="analyze-error-message">{error}</p>
+                    <button onClick={loadData} className="analyze-error-retry">
+                        Retry
+                    </button>
+                </div>
+            )}
+            
+            {loading ? <p className="analyze-loading">Loading...</p> : <EventsTable events={events} />}
         </div>
     );
 };
+
+export default AnalyzePage;
