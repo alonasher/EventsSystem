@@ -5,6 +5,32 @@
 
 .events-table-container {}
 
+.events-table-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.events-table-controls label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.events-table-controls select {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.events-table-controls select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  border-color: #007bff;
+}
+
 .events-table {
   width: 100%;
   border-collapse: collapse;
