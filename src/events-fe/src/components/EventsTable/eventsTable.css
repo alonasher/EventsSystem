@@ -1,0 +1,32 @@
+.events-empty {
+  text-align: center;
+  color: #666;
+}
+
+.events-table-container {
+  /* container for table - keeps existing layout */
+}
+
+.events-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.events-table thead tr {
+  background: #f4f4f4;
+  text-align: left;
+}
+
+.events-table th,
+.events-table td {
+  padding: 10px;
+}
+
+.events-table tbody tr {
+  border-bottom: 1px solid #ddd;
+}
+
+.events-type {
+  font-weight: bold;
+}

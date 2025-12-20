@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { eventsService } from '../services/eventsService';
 import type { AppEvent } from '../types';
-import { EventsTable } from '../components/eventsTable';
+import { EventsTable } from '../components/EventsTable/eventsTable';
 
 export const AnalyzePage = () => {
     const [events, setEvents] = useState<AppEvent[]>([]);

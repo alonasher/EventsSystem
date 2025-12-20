@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 
 export const RecordingPage = () => {
     const workerRef = useRef<Worker | null>(null);
@@ -30,6 +30,16 @@ export const RecordingPage = () => {
         }
     };
 
+    const inputDebounceRef = useRef<number | undefined>(undefined);
+
+    useEffect(() => {
+        return () => {
+            if (inputDebounceRef.current) {
+                clearTimeout(inputDebounceRef.current);
+            }
+        };
+    }, []);
+
     return (
         <div style={{ maxWidth: '600px', margin: '2rem auto', padding: '1rem' }}>
             <h1>🔴 Recording Page</h1>
@@ -49,10 +59,16 @@ export const RecordingPage = () => {
 
                 {/* Input */}
                 <div>
-                    <input 
-                        type="text" 
-                        placeholder="Type & Blur to send..."
-                        onBlur={(e) => trackEvent('input_blur', `Value: ${e.target.value}`)}
+                    <input
+                        type="text"
+                        placeholder="Type to send (debounced)..."
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            const val = e.target.value;
+                            if (inputDebounceRef.current) clearTimeout(inputDebounceRef.current);
+                            inputDebounceRef.current = window.setTimeout(() => {
+                                trackEvent('input_change', `Value: ${val}`);
+                            }, 300);
+                        }}
                         style={{ padding: '8px', width: '100%', border: '1px solid #ccc' }}
                     />
                 </div>

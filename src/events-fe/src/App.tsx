@@ -1,14 +1,14 @@
 import './App.css'
 import { AnalyzePage } from './views/analyzePage'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { NavBar } from './components/navbar'
 import { RecordingPage } from './views/recordingPage'
+import Navbar from './components/Navbar/navbar';
 
 function App() {
 
   return (
     <BrowserRouter>
-      <NavBar />
+      <Navbar />
       
       <Routes>
         <Route path="/" element={<RecordingPage />} />
