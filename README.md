@@ -1,48 +1,10 @@
-```markdown
 # Event Tracking System
 
 A full-stack event tracking solution that captures user interactions via a client-side application, processes them asynchronously using a message broker, and stores them in a time-series database for analysis.
 
 ## 🚀 Architecture
 
-The system is built using a **Microservices Architecture** approach and is fully containerized:
-
-```mermaid
-graph LR
-    Client["React Client"] -->|Web Worker| API["Backend API<br/>(.NET 9)"]
-    API -->|Produce| Kafka["Kafka Broker"]
-    Kafka -->|Consume| Worker["Worker Service<br/>(.NET 9)"]
-    Worker -->|Write| InfluxDB["InfluxDB"]
-
-```
-
-* **Frontend:** React (Vite + TypeScript) served via Nginx. Implements **Web Workers** for off-main-thread event submission.
-* **Backend API:** ASP.NET Core 9 Web API (Producer).
-* **Message Broker:** Apache Kafka (running in KRaft mode).
-* **Consumer:** .NET Background Service (Worker).
-* **Database:** InfluxDB (Time-series database optimized for event logs).
-* **Infrastructure:** Docker Compose (Orchestrates all services including UI and DB).
-
----
-
-## 🛠️ Prerequisites
-
-# Event Tracking System
-
-A full-stack event tracking solution that captures user interactions via a client-side application, processes them asynchronously using a message broker, and stores them in a time-series database for analysis.
-
-## 🚀 Architecture
-
-The system is built using a **Microservices Architecture** approach and is fully containerized:
-
-```mermaid
-graph LR
-    Client["React Client"] -->|Web Worker| API["Backend API<br/>(.NET 9)"]
-    API -->|Produce| Kafka["Kafka Broker"]
-    Kafka -->|Consume| Worker["Worker Service<br/>(.NET 9)"]
-    Worker -->|Write| InfluxDB["InfluxDB"]
-
-```
+The system is built using a **Microservices Architecture** approach and is fully containerized
 
 * **Frontend:** React (Vite + TypeScript) served via Nginx. Implements **Web Workers** for off-main-thread event submission.
 * **Backend API:** ASP.NET Core 9 Web API (Producer).
