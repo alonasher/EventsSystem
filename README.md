@@ -49,10 +49,10 @@ docker-compose up -d --build
 
 Once running, the services are available at:
 
-* **🖥️ React Frontend:** https://localhost:5173
-* **🔌 API Swagger:** https://localhost:5150/swagger
-* **📊 Kafka UI:** https://localhost:8080
-* **💾 InfluxDB:** https://localhost:8086
+* **🖥️ React Frontend:** http://localhost:5173
+* **🔌 API Swagger:** http://localhost:5150/swagger
+* **📊 Kafka UI:** http://localhost:8080
+* **💾 InfluxDB:** http://localhost:8086
 
 ---
 
