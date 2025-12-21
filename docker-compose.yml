@@ -1,7 +1,6 @@
-version: '3.8'
-
 services:
-  # 1. InfluxDB
+  # --- Infrastructure ---
+  
   influxdb:
     image: influxdb:2.7
     container_name: influxdb
@@ -17,35 +16,28 @@ services:
     volumes:
       - influxdb_data:/var/lib/influxdb2
     networks:
-      - backend-network
+      - app-network
 
-  # 2. Kafka (Confluent Image in KRaft Mode)
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: kafka
     ports:
       - "9092:9092"
     environment:
-      # תפקיד: גם ברוקר וגם קונטרולר (מחליף את Zookeeper)
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
-      
-      # הגדרות רשת והאזנה
       KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      
-      # מזהה אשכול קבוע (כדי למנוע שגיאות באתחול מחדש)
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     networks:
-      - backend-network
+      - app-network
 
-  # 3. Kafka UI
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -57,10 +49,60 @@ services:
     depends_on:
       - kafka
     networks:
-      - backend-network
+      - app-network
+
+  # --- Your Applications ---
+
+  events-api:
+    container_name: events-api
+    build:
+      context: ./src/EventsApi
+      dockerfile: Dockerfile
+    ports:
+      - "5150:8080"
+    environment:
+      - Kafka__BootstrapServers=kafka:29092
+      - InfluxDB__Url=http://influxdb:8086
+      - InfluxDB__Token=my-super-secret-token
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_ENVIRONMENT=Development 
+    depends_on:
+      - kafka
+      - influxdb
+    networks:
+      - app-network
+
+  events-consumer:
+    container_name: events-consumer
+    build:
+      context: ./src/EventsConsumer
+      dockerfile: Dockerfile
+    environment:
+      - Kafka__BootstrapServers=kafka:29092
+      - InfluxDB__Url=http://influxdb:8086
+      - InfluxDB__Token=my-super-secret-token
+      - Kafka__GroupId=docker-consumer-group
+    depends_on:
+      - kafka
+      - influxdb
+      - events-api
+    networks:
+      - app-network
+
+  events-fe:
+    container_name: events-fe
+    build:
+      context: ./src/events-fe
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - events-api
+    networks:
+      - app-network
 
 networks:
-  backend-network:
+  app-network:
     driver: bridge
 
 volumes:
