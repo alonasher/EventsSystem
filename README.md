@@ -83,7 +83,8 @@ The application consists of two main pages:
 * **Scalability over Complexity:** The system incorporates Apache Kafka and InfluxDB to demonstrate readiness for high-throughput scenarios, assuming that write performance and decoupling are critical for an event tracking system.
 * **Authentication:** For the purpose of this assignment, user authentication and authorization were omitted to focus on the core event processing pipeline and ease of local deployment.
 * **Data Consistency:** The solution implements an "At-Least-Once" delivery semantic via Kafka.
-* **Network Reliability:** The client-side Web Worker assumes network connectivity. 
+* **Network Reliability:** The client-side Web Worker assumes network connectivity.
+* **Orchestration:** Kubernetes (k8s) is intentionally not used to keep the project's setup and codebase simple; Docker Compose is used for local development and deployment instead.
 
 ---
 
