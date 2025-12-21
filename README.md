@@ -27,6 +27,34 @@ graph LR
 
 ## 🛠️ Prerequisites
 
+# Event Tracking System
+
+A full-stack event tracking solution that captures user interactions via a client-side application, processes them asynchronously using a message broker, and stores them in a time-series database for analysis.
+
+## 🚀 Architecture
+
+The system is built using a **Microservices Architecture** approach and is fully containerized:
+
+```mermaid
+graph LR
+    Client["React Client"] -->|Web Worker| API["Backend API<br/>(.NET 9)"]
+    API -->|Produce| Kafka["Kafka Broker"]
+    Kafka -->|Consume| Worker["Worker Service<br/>(.NET 9)"]
+    Worker -->|Write| InfluxDB["InfluxDB"]
+
+```
+
+* **Frontend:** React (Vite + TypeScript) served via Nginx. Implements **Web Workers** for off-main-thread event submission.
+* **Backend API:** ASP.NET Core 9 Web API (Producer).
+* **Message Broker:** Apache Kafka (running in KRaft mode).
+* **Consumer:** .NET Background Service (Worker).
+* **Database:** InfluxDB (Time-series database optimized for event logs).
+* **Infrastructure:** Docker Compose (Orchestrates all services including UI and DB).
+
+---
+
+## 🛠️ Prerequisites
+
 * **Docker Desktop** (Required)
 * **Git**
 
@@ -39,7 +67,7 @@ graph LR
 ### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/alonasher/EventsSystem.git](https://github.com/alonasher/EventsSystem.git)
+git clone https://github.com/alonasher/EventsSystem.git
 cd EventsSystem
 
 ```
@@ -59,10 +87,10 @@ docker-compose up -d --build
 
 Once running, the services are available at:
 
-* **🖥️ React Frontend:** [http://localhost:5173](http://localhost:5173)
-* **🔌 API Swagger:** [http://localhost:5150/swagger](http://localhost:5150/swagger)
-* **📊 Kafka UI:** [http://localhost:8080](http://localhost:8080)
-* **💾 InfluxDB:** [http://localhost:8086](http://localhost:8086)
+* **🖥️ React Frontend:** https://localhost:5173
+* **🔌 API Swagger:** https://localhost:5150/swagger
+* **📊 Kafka UI:** https://localhost:8080
+* **💾 InfluxDB:** https://localhost:8086
 
 ---
 
@@ -109,7 +137,3 @@ The application consists of two main pages:
 ## 📞 Contact
 
 Submitted by: Alon Asher
-
-```
-
-```
